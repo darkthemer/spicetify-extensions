@@ -6,4 +6,4 @@ spicetify extensions coded by me
 
 ### [customControls](customControls)
 
-![](customControls/preview.png)
+![](customControls/preview.gif)
