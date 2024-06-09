@@ -1,7 +1,7 @@
 [
     {
         "name": "Custom Controls",
-        "description": "Replaces the titlebar's original minimum, maximum, and close buttons with custom ones.",
+        "description": "Replaces the original titlebar, (with limitations)",
         "preview": "customControls/preview.gif",
         "main": "customControls/customControls.js",
         "readme": "customControls/README.md",

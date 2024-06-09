@@ -1,17 +1,19 @@
 # customControls
 
-Replaces the titlebar's original minimum, maximum, and close buttons with custom ones. (w/ limitations)
+Replaces the titlebar's original minimum, maximum, and close buttons with custom ones. (with limitations)
 
 ## Preview
 
 ![](preview.gif)
 
-## Modification
+## Customization
 
 Just inspect element then save your edits through the marketplace's add css snippet function or through your theme's local CSS file.
 
 The settings menu contains the following options:
+
 -   having the maximize button toggle fullscreen instead of window resizing
+-   scaling the control buttons
 -   choosing between several preset control button styles
 
 ## Limitations

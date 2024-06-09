@@ -22,12 +22,12 @@
         config = {};
     }
 
-    /** @type {React} */
     const react = Spicetify.React;
     const { useState, useCallback } = react;
 
     config.fullscreenMaximize = config.fullscreenMaximize ?? false;
     config.controlsStyle = config.controlsStyle ?? "win";
+    config.controlsSize = config.controlsSize ?? 1;
     localStorage.setItem("customControls:config", JSON.stringify(config));
 
     const settingsStyle = `
@@ -139,6 +139,43 @@
             )
         );
     };
+    const ConfigInput = ({ name, defaultValue, onChange = (value) => {} }) => {
+        const [value, setValue] = useState(defaultValue);
+
+        const setValueCallback = useCallback(
+            (event) => {
+                const value = event.target.value;
+                setValue(value);
+                onChange(value);
+            },
+            [value]
+        );
+
+        return react.createElement(
+            "div",
+            {
+                className: "setting-row",
+            },
+            react.createElement(
+                "label",
+                {
+                    className: "col description",
+                },
+                name
+            ),
+            react.createElement(
+                "div",
+                {
+                    className: "col action",
+                },
+                react.createElement("input", {
+                    type: "number",
+                    value,
+                    onChange: setValueCallback,
+                })
+            )
+        );
+    };
     const ConfigSelection = ({
         name,
         defaultValue,
@@ -235,14 +272,24 @@
     `;
     document.getElementById("main").appendChild(titlebar);
 
+    const controlsSize = Number(config.controlsSize);
+    if (isNaN(controlsSize)) {
+        Spicetify.showNotification("Invalid size value, enter a number (from 0.1 up to 2.0)");
+        config.controlsSize = 1;
+        localStorage.setItem("customControls:config", JSON.stringify(config));
+    }
+    const cssControlPrefs = `
+    :root {
+        --control-button-size-multiplier: ${config.controlsSize};
+    }
+    `;
     const cssControlStyles = {
         win: `
         @import url(https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200);
 
         :root {
-            --control-button-width: 60px;
-            --control-button-height: 52px;
-            --control-button-size-multiplier: 1;
+            --control-button-width: 45px;
+            --control-button-height: 39px;
 
             --control-button-bg-color: transparent;
             --control-button-icon-color: var(--spice-text);
@@ -259,11 +306,7 @@
             --close-button-order: 3;
 
             --control-button-symbol-weight: 300;
-            --control-button-symbol-size: 24px;
-        }
-        .spotify__container--is-desktop:not(.fullscreen).spotify__os--is-windows
-            .body-drag-top {
-            right: calc(var(--control-button-width) * 3);
+            --control-button-symbol-size: 18px;
         }
         .ctrls {
             display: flex;
@@ -274,6 +317,7 @@
             width: auto;
             height: auto;
             z-index: 1;
+            -webkit-app-region: no-drag;
         }
         .ctrl {
             display: flex;
@@ -329,9 +373,8 @@
         @import url(https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200);
 
         :root {
-            --control-button-width: 60px;
-            --control-button-height: 52px;
-            --control-button-size-multiplier: 1;
+            --control-button-width: 45px;
+            --control-button-height: 39px;
 
             --control-button-bg-color: transparent;
             --control-button-bg-hover-color: transparent;
@@ -346,11 +389,7 @@
             --close-button-order: 3;
 
             --control-button-symbol-weight: 800;
-            --control-button-symbol-size: 18px;
-        }
-        .spotify__container--is-desktop:not(.fullscreen).spotify__os--is-windows
-            .body-drag-top {
-            right: calc(var(--control-button-width) * 3);
+            --control-button-symbol-size: 12px;
         }
         .ctrls {
             display: flex;
@@ -361,6 +400,7 @@
             width: auto;
             height: auto;
             z-index: 1;
+            -webkit-app-region: no-drag;
         }
         .ctrl {
             display: flex;
@@ -388,8 +428,8 @@
             align-items: center;
             justify-content: center;
             border-radius: 100%;
-            height: 18px;
-            width: 18px;
+            height: 15px;
+            width: 15px;
         }
         .min .icon {
             background-color: var(--min-button-icon-color);
@@ -422,7 +462,7 @@
         }
         .max .icon::before {
             content: "arrow_left arrow_right";
-            word-spacing: -28px;
+            word-spacing: -18px;
             transform: rotate(314deg);
         }
         .close .icon::before {
@@ -433,9 +473,8 @@
         @import url(https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200);
 
         :root {
-            --control-button-width: 60px;
-            --control-button-height: 52px;
-            --control-button-size-multiplier: 1;
+            --control-button-width: 45px;
+            --control-button-height: 39px;
 
             --control-button-bg-color: transparent;
             --control-button-bg-hover-color: transparent;
@@ -457,11 +496,7 @@
             --close-button-order: 3;
 
             --control-button-symbol-weight: 800;
-            --control-button-symbol-size: 18px;
-        }
-        .spotify__container--is-desktop:not(.fullscreen).spotify__os--is-windows
-            .body-drag-top {
-            right: calc(var(--control-button-width) * 3);
+            --control-button-symbol-size: 12px;
         }
         .ctrls {
             display: flex;
@@ -472,6 +507,7 @@
             width: auto;
             height: auto;
             z-index: 1;
+            -webkit-app-region: no-drag;
         }
         .ctrl {
             display: flex;
@@ -499,8 +535,8 @@
             align-items: center;
             justify-content: center;
             border-radius: 100%;
-            height: 18px;
-            width: 18px;
+            height: 15px;
+            width: 15px;
         }
         .min .icon {
             background-color: var(--min-button-icon-color);
@@ -540,7 +576,7 @@
         .max .icon::before {
             content: "arrow_left arrow_right";
             color: var(--max-button-symbol-color);
-            word-spacing: -28px;
+            word-spacing: -18px;
             transform: rotate(314deg);
         }
         .close .icon::before {
@@ -561,9 +597,8 @@
         @import url(https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200);
 
         :root {
-            --control-button-width: 60px;
-            --control-button-height: 52px;
-            --control-button-size-multiplier: 1;
+            --control-button-width: 45px;
+            --control-button-height: 39px;
 
             --control-button-bg-color: transparent;
             --control-button-icon-color: var(--spice-subtext);
@@ -575,11 +610,7 @@
             --close-button-order: 3;
 
             --control-button-symbol-weight: 300;
-            --control-button-symbol-size: 24px;
-        }
-        .spotify__container--is-desktop:not(.fullscreen).spotify__os--is-windows
-            .body-drag-top {
-            right: calc(var(--control-button-width) * 3);
+            --control-button-symbol-size: 18px;
         }
         .ctrls {
             display: flex;
@@ -590,6 +621,7 @@
             width: auto;
             height: auto;
             z-index: 1;
+            -webkit-app-region: no-drag;
         }
         .ctrl {
             display: flex;
@@ -654,9 +686,8 @@
         @import url(https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200);
 
         :root {
-            --control-button-width: 60px;
-            --control-button-height: 52px;
-            --control-button-size-multiplier: 1;
+            --control-button-width: 45px;
+            --control-button-height: 39px;
 
             --control-button-bg-color: transparent;
             --control-button-bg-hover-color: transparent;
@@ -674,11 +705,7 @@
             --close-button-order: 3;
 
             --control-button-symbol-weight: 800;
-            --control-button-symbol-size: 18px;
-        }
-        .spotify__container--is-desktop:not(.fullscreen).spotify__os--is-windows
-            .body-drag-top {
-            right: calc(var(--control-button-width) * 3);
+            --control-button-symbol-size: 12px;
         }
         .ctrls {
             display: flex;
@@ -689,6 +716,7 @@
             width: auto;
             height: auto;
             z-index: 1;
+            -webkit-app-region: no-drag;
         }
         .ctrl {
             display: flex;
@@ -716,8 +744,8 @@
             align-items: center;
             justify-content: center;
             border-radius: 100%;
-            height: 18px;
-            width: 18px;
+            height: 15px;
+            width: 15px;
         }
         .min .icon {
             background-color: var(--min-button-icon-color);
@@ -727,8 +755,8 @@
         }
         .close .icon {
             background-color: transparent;
-            outline: 6px solid var(--close-button-icon-color);
-            outline-offset: -6px;
+            outline: 4px solid var(--close-button-icon-color);
+            outline-offset: -4px;
         }
         .min:hover .icon {
             background-color: var(--min-button-icon-hover-color);
@@ -762,7 +790,7 @@
         }
         .max .icon::before {
             content: "arrow_left arrow_right";
-            word-spacing: -28px;
+            word-spacing: -18px;
             transform: rotate(314deg);
         }
         .close .icon::before {
@@ -773,9 +801,8 @@
         @import url(https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200);
 
         :root {
-            --control-button-width: 60px;
-            --control-button-height: 52px;
-            --control-button-size-multiplier: 1;
+            --control-button-width: 45px;
+            --control-button-height: 39px;
 
             --control-button-bg-color: transparent;
             --control-button-icon-color: var(--spice-subtext);
@@ -787,11 +814,7 @@
             --close-button-order: 3;
 
             --control-button-symbol-weight: 300;
-            --control-button-symbol-size: 48px;
-        }
-        .spotify__container--is-desktop:not(.fullscreen).spotify__os--is-windows
-            .body-drag-top {
-            right: calc(var(--control-button-width) * 3);
+            --control-button-symbol-size: 32px;
         }
         .ctrls {
             display: flex;
@@ -803,6 +826,7 @@
             height: auto;
             z-index: 1;
             overflow: hidden;
+            -webkit-app-region: no-drag;
         }
         .ctrl {
             display: flex;
@@ -849,9 +873,8 @@
     `,
         slash: `
         :root {
-            --control-button-width: 60px;
-            --control-button-height: 52px;
-            --control-button-size-multiplier: 1;
+            --control-button-width: 45px;
+            --control-button-height: 39px;
 
             --control-button-bg-color: transparent;
             --control-button-icon-color: var(--spice-subtext);
@@ -862,10 +885,6 @@
             --max-button-order: 2;
             --close-button-order: 3;
         }
-        .spotify__container--is-desktop:not(.fullscreen).spotify__os--is-windows
-            .body-drag-top {
-            right: calc(var(--control-button-width) * 3);
-        }
         .ctrls {
             display: flex;
             flex-direction: row;
@@ -875,6 +894,7 @@
             width: auto;
             height: auto;
             z-index: 1;
+            -webkit-app-region: no-drag;
         }
         .ctrl {
             display: flex;
@@ -901,8 +921,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 18px;
-            width: 18px;
+            height: 15px;
+            width: 15px;
             background-color: var(--control-button-icon-color);
             clip-path: polygon(100% 0%, 100% 30%, 30% 100%, 0% 100%, 0 70%, 70% 0);
         }
@@ -951,9 +971,8 @@
         @import url(https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200);
 
         :root {
-            --control-button-width: 65px;
-            --control-button-height: 45px;
-            --control-button-size-multiplier: 1;
+            --control-button-width: 45px;
+            --control-button-height: 31px;
 
             --control-button-bg-color: transparent;
             --control-button-bg-hover-color: transparent;
@@ -975,11 +994,7 @@
             --close-button-order: 3;
 
             --control-button-symbol-weight: 600;
-            --control-button-symbol-size: 24px;
-        }
-        .spotify__container--is-desktop:not(.fullscreen).spotify__os--is-windows
-            .body-drag-top {
-            right: calc(var(--control-button-width) * 3);
+            --control-button-symbol-size: 18px;
         }
         .ctrls {
             display: flex;
@@ -991,6 +1006,7 @@
             height: auto;
             z-index: 1;
             overflow: hidden;
+            -webkit-app-region: no-drag;
         }
         .ctrl {
             display: flex;
@@ -1018,8 +1034,8 @@
             align-items: center;
             justify-content: center;
             border-radius: 8px;
-            height: 27px;
-            width: 53px;
+            height: 21px;
+            width: 37px;
         }
         .min .icon {
             background-color: var(--min-button-icon-color);
@@ -1063,6 +1079,7 @@
         .close .icon::before {
             content: "close";
             color: var(--close-button-symbol-color);
+            word-spacing: -29px;
         }
         .min:hover .icon::before {
             color: var(--min-button-symbol-hover-color);
@@ -1073,13 +1090,12 @@
         .close:hover .icon::before {
             content: "chevron_right close chevron_left";
             color: var(--close-button-symbol-hover-color);
-            word-spacing: -37px;
         }
         `,
     };
     const style = document.createElement("style");
     style.id = "customControls_style";
-    style.innerHTML = cssControlStyles[config.controlsStyle];
+    style.innerHTML = cssControlStyles[config.controlsStyle] + cssControlPrefs;
     document.head.appendChild(style);
 
     const min = titlebar.querySelector(".min");
@@ -1147,7 +1163,13 @@
                         type: ConfigSlider,
                     },
                     {
-                        desc: "Control Style",
+                        desc: "Controls Size",
+                        info: "Scale control buttons from '0.1' up to 'a reasonable size'",
+                        key: "controlsSize",
+                        type: ConfigInput,
+                    },
+                    {
+                        desc: "Controls Style",
                         info: "Choose a style for your control buttons",
                         key: "controlsStyle",
                         type: ConfigSelection,
@@ -1165,7 +1187,10 @@
                 ],
                 onChange: (name, value) => {
                     if (name === "controlsStyle") {
-                        style.innerHTML = cssControlStyles[value];
+                        style.innerHTML = cssControlStyles[value] + cssControlPrefs;
+                    }
+                    if (name === "controlsSize") {
+                        document.documentElement.style.setProperty("--control-button-size-multiplier", value);
                     }
                     config[name] = value;
 
