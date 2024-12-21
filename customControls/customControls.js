@@ -1,17 +1,44 @@
 // NAME: Custom Controls
-// AUTHORS: darkthemer, OhItsTom
+// AUTHORS: darkthemer, ohitstom (noControls)
 // DESCRIPTION: Replaces the titlebar's original minimum, maximum, and close buttons with custom ones.
 
 (async function customControls() {
-    if (!Spicetify.CosmosAsync || !Spicetify.Platform || !Spicetify.React) {
-        setTimeout(customControls, 10);
-        return;
-    }
+	if (!Spicetify.CosmosAsync || !Spicetify.Platform.UpdateAPI) {
+		setTimeout(customControls, 10);
+		return;
+	}
 
-    await Spicetify.CosmosAsync.post("sp://messages/v1/container/control", {
-        type: "update_titlebar",
-        height: "1px",
-    });
+	// Set an interval to periodically send the post request to enforce the height
+	const intervalId = setInterval(removeControls, 100);
+
+	// Function to remove controls
+	function removeControls() {
+		// Spotify functions < 1.2.51
+		Spicetify.CosmosAsync.post("sp://messages/v1/container/control", {
+			type: "update_titlebar",
+			height: "1px"
+		});
+
+		// Spotify functions >= 1.2.51
+		if (Spicetify.Platform.UpdateAPI._updateUiClient?.updateTitlebarHeight) {
+			Spicetify.Platform.UpdateAPI._updateUiClient.updateTitlebarHeight({
+				height: 1
+			});
+		}
+
+		if (Spicetify.Platform.UpdateAPI._updateUiClient?.setButtonsVisibility) {
+			Spicetify.Platform.UpdateAPI._updateUiClient.setButtonsVisibility(false);
+		}
+	}
+
+	// Remove our changes when the user navigates away
+	window.addEventListener("beforeunload", () => {
+		clearInterval(intervalId);
+
+		if (Spicetify.Platform.UpdateAPI._updateUiClient?.setButtonsVisibility) {
+			Spicetify.Platform.UpdateAPI._updateUiClient.setButtonsVisibility({ showButtons: true });
+		}
+	});
 
     let config;
     try {
@@ -27,7 +54,7 @@
 
     config.fullscreenMaximize = config.fullscreenMaximize ?? false;
     config.controlsStyle = config.controlsStyle ?? "win";
-    config.controlsSize = config.controlsSize ?? 1;
+    config.controlsSize = config.controlsSize ?? 1.35;
     localStorage.setItem("customControls:config", JSON.stringify(config));
 
     const settingsStyle = `
@@ -273,9 +300,9 @@
     document.getElementById("main").appendChild(titlebar);
 
     const controlsSize = Number(config.controlsSize);
-    if (isNaN(controlsSize)) {
-        Spicetify.showNotification("Invalid size value, enter a number (from 0.1 up to 2.0)");
-        config.controlsSize = 1;
+    if (isNaN(controlsSize) || controlsSize < 0.5 || controlsSize > 2) {
+        Spicetify.showNotification("[customControls extension] Invalid controls size value, enter a number from 0.5 to 2.0");
+        config.controlsSize = 1.35;
         localStorage.setItem("customControls:config", JSON.stringify(config));
     }
     const cssControlPrefs = `
@@ -1092,6 +1119,80 @@
             color: var(--close-button-symbol-hover-color);
         }
         `,
+        rosepine: `
+        :root {
+            --control-button-width: 60px;
+            --control-button-height: 45px;
+        }
+        .spotify__container--is-desktop:not(.fullscreen).spotify__os--is-windows .body-drag-top {
+            right: calc(var(--control-button-width) * 3);
+        }
+        .ctrls {
+            display: flex;
+            flex-direction: row;
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: auto;
+            height: auto;
+            z-index: 1;
+        }
+        .ctrl {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: var(--control-button-width);
+            height: var(--control-button-height);
+            background-color: transparent;
+            zoom: var(--control-button-size-multiplier);
+        }
+        .icon {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 100%;
+            background: var(--caption-color, currentColor);
+            height: 18px;
+            width: 18px;
+        }
+        .min {
+            --caption-color: rgb(246, 193, 119);
+            --caption-color-hover: rgba(246, 193, 119, 0.3);
+        }
+        .max {
+            --caption-color: rgb(156, 207, 216);
+            --caption-color-hover: rgb(156, 207, 216, 0.3);
+        }
+        .close {
+            --caption-color: rgb(235, 188, 186);
+            --caption-color-hover: rgba(235, 188, 186, 0.3);
+        }
+        .ctrl:hover .icon {
+            background: var(--caption-color-hover, currentColor) !important;
+            outline: 3px solid var(--caption-color, currentColor);
+            outline-offset: -2px;
+        }
+        .icon::before {
+            font-family: "Segoe Fluent Icons" !important;
+            font-weight: bold;
+            scale: 0.6;
+            -webkit-text-stroke: 2px;
+            color: var(--caption-color, currentColor);
+        }
+        .min:hover .icon::before {
+            content: "\\f7af";
+            position: absolute;
+            rotate: -30deg;
+        }
+        .max:hover .icon::before {
+            content: "\\ea3a";
+            position: absolute;
+        }
+        .close:hover .icon::before {
+            content: "\\e711";
+            position: absolute;
+        }
+        `,
     };
     const style = document.createElement("style");
     style.id = "customControls_style";
@@ -1164,7 +1265,7 @@
                     },
                     {
                         desc: "Controls Size",
-                        info: "Scale control buttons from '0.1' up to 'a reasonable size'",
+                        info: "Scale control buttons from 0.5 to 2.0",
                         key: "controlsSize",
                         type: ConfigInput,
                     },
@@ -1182,6 +1283,7 @@
                             dash: "dash",
                             slash: "slash",
                             nu: "nu",
+                            rosepine: "rose pine",
                         },
                     },
                 ],
@@ -1190,7 +1292,12 @@
                         style.innerHTML = cssControlStyles[value] + cssControlPrefs;
                     }
                     if (name === "controlsSize") {
+                        if (isNaN(value) || value < 0.5 || value > 2) {
+                            Spicetify.showNotification("[customControls extension] Invalid controls size value, enter a number from 0.5 to 2.0");
+                            document.documentElement.style.setProperty("--control-button-size-multiplier", 1.35);
+                        } else {
                         document.documentElement.style.setProperty("--control-button-size-multiplier", value);
+                        }
                     }
                     config[name] = value;
 
