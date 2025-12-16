@@ -2,6 +2,8 @@
 
 Replaces the titlebar's original minimum, maximum, and close buttons with custom ones. (with limitations)
 
+**MUST EITHER** have the [noControls](https://github.com/ohitstom/spicetify-extensions/tree/main/noControls) extension also installed **OR** have the [CEF/Spotify Tweaks](https://windhawk.net/mods/cef-titlebar-enabler-universal) configured through Windhawk to disable the built-in window controls.
+
 ## Preview
 
 ![](preview.gif)
@@ -29,6 +31,5 @@ The settings menu contains the following options:
 ## Credits
 
 -   [darkthemer](https://github.com/darkthemer/) : authored this extension
--   [OhItsTom](https://github.com/ohitstom/) : made [noControls.js](https://github.com/ohitstom/spicetify-extensions/tree/main/noControls) possible
 -   [kyrie25](https://github.com/kyrie25/) : extension settings code as template
 -   [niivu](https://www.deviantart.com/niivu) : control button designs as inspiration
